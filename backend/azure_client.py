@@ -42,7 +42,7 @@ def get_azure_deployment_id(model_name: str) -> str:
     """
     # Map model names to deployment IDs
     deployment_map = {
-        'gpt-4.1-mini': os.getenv('AZURE_DEPLOYMENT_GPT4_MINI', 'gpt-4.1-mini'),
+        'gpt-5-nano': os.getenv('AZURE_DEPLOYMENT', 'gpt-5-nano'),
         # Add more model mappings as needed
     }
     

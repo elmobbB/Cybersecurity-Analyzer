@@ -99,10 +99,18 @@ resource "google_cloud_run_service" "app" {
           }
         }
 
-        env {
-          name  = "OPENAI_API_KEY"
-          value = var.openai_api_key
-        }
+      env {
+        name  = "AZURE_OPENAI_KEY_GPT_5_NANO"
+        value = var.azure_openai_key_gpt_5_nano
+      }
+      env {
+        name  = "AI_FOUNDRY_ENDPOINT_GPT_5_NANO"
+        value = var.ai_foundry_endpoint_gpt_5_nano
+      }
+      env {
+        name  = "AZURE_OPENAI_API_VERSION"
+        value = var.azure_openai_api_version
+      }
 
         env {
           name  = "SEMGREP_APP_TOKEN"
