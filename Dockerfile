@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y \
 # Install uv for Python package management
 RUN pip install uv
 
+# Install semgrep
+RUN pip install semgrep
+
 # Copy Python dependencies and install
 COPY backend/pyproject.toml backend/uv.lock* ./
 RUN uv sync --frozen

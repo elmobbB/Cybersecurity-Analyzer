@@ -16,8 +16,20 @@ variable "resource_group_name" {
   default     = "cyber-analyzer-rg"
 }
 
-variable "openai_api_key" {
-  description = "OpenAI API key for the application"
+variable "azure_openai_key_gpt_5_nano" {
+  description = "Azure OpenAI API key for the application"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+variable "ai_foundry_endpoint_gpt_5_nano" {
+  description = "Azure OpenAI endpoint for the application"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+variable "azure_openai_api_version" {
+  description = "Azure OpenAI API version for the application"
   type        = string
   sensitive   = true
   default     = ""
