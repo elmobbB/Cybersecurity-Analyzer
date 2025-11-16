@@ -1,5 +1,7 @@
 import os
 import json
+import subprocess
+import tempfile
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -16,7 +18,7 @@ from mcp_servers import create_semgrep_server
 
 # Initialize Azure OpenAI client
 client = get_azure_openai_client()
-MODEL = "gpt-4.1-mini"
+MODEL = "gpt-5-nano"
 AZURE_DEPLOYMENT = get_azure_deployment_id(MODEL)
 
 load_dotenv()
@@ -139,6 +141,7 @@ async def analyze_with_azure_openai(
             "role": "system",
             "content": f"Semgrep analysis results:\n{json.dumps(semgrep_results, indent=2)}"
         })
+        print(f"injected S results:\n{json.dumps(semgrep_results, indent=2)}")
     
     try:
         response = client.chat.completions.create(
@@ -155,6 +158,35 @@ async def analyze_with_azure_openai(
         return {"error": "Failed to parse AI response"}
     except Exception as e:
         return {"error": f"Error calling Azure OpenAI: {str(e)}"}
+
+
+def run_semgrep_scan(code: str) -> Dict[str, Any]:
+    """Run semgrep scan on the provided code and return results."""
+    try:
+        # Create a temporary file to store the code
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp_file:
+            tmp_file_path = tmp_file.name
+            tmp_file.write(code.encode('utf-8'))
+        
+        # Run semgrep scan
+        result = subprocess.run(
+            ["semgrep", "--config=auto", "--json", tmp_file_path],
+            capture_output=True,
+            text=True
+        )
+        
+        # Clean up the temporary file
+        try:
+            os.unlink(tmp_file_path)
+        except Exception:
+            pass
+            
+        if result.returncode != 0 and not result.stdout:
+            raise Exception(f"Semgrep scan failed: {result.stderr}")
+            
+        return json.loads(result.stdout)
+    except Exception as e:
+        raise Exception(f"Error running semgrep: {str(e)}")
 
 
 async def run_security_analysis(code: str) -> SecurityReport:
@@ -176,6 +208,8 @@ async def run_security_analysis(code: str) -> SecurityReport:
             async with create_semgrep_server() as semgrep:
                 # TODO: Implement Semgrep analysis and get results
                 semgrep_results = {}
+                semgrep_results = run_semgrep_scan(code)
+
                 print("Semgrep analysis completed")
         except Exception as semgrep_error:
             print(f"Warning: Semgrep analysis failed: {str(semgrep_error)}")
